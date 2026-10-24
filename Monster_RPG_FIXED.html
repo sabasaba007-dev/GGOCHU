@@ -1,0 +1,4143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Monster RPG</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: #0b0a12;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+    transition: background 0.4s;
+}
+
+.game-container {
+    width: 350px;
+    height: 660px;
+    background: #121324;
+    border: 2px solid #333652;
+    border-radius: 20px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 0 15px rgba(0,0,0,.5);
+    position: relative;
+    overflow: hidden;
+    transition: .4s;
+}
+
+/* =========================
+   용 테마
+========================= */
+
+body.dragon-theme {
+    background: #140800;
+}
+
+.game-container.dragon-theme {
+    background: #211006;
+    border-color: #ffd000;
+    box-shadow:
+        0 0 30px rgba(255,180,0,.7),
+        inset 0 0 20px rgba(255,100,0,.25);
+}
+
+/* =========================
+   보스 테마
+========================= */
+
+body.boss-theme {
+    background: #160000;
+}
+
+.game-container.boss-theme {
+    background: #210606;
+    border-color: #ff2222;
+    box-shadow:
+        0 0 35px rgba(255,0,0,.8),
+        inset 0 0 25px rgba(255,0,0,.3);
+}
+
+.boss-theme .stage-info {
+    color: #ff4444 !important;
+    text-shadow: 0 0 12px red;
+}
+
+.boss-theme .monster-hp-fill {
+    background: linear-gradient(90deg,#ff0000,#ff5500);
+}
+
+/* =========================
+   닉네임 / 레벨
+========================= */
+
+.player-name {
+    position: absolute;
+    top: 12px;
+    left: 14px;
+    font-size: .72rem;
+    font-weight: 900;
+    color: #ffffff;
+    z-index: 3;
+    text-shadow: 0 0 5px #000;
+}
+
+.player-name span {
+    color: #00ffcc;
+}
+
+/* =========================
+   상단
+========================= */
+
+.header {
+    text-align: center;
+    width: 100%;
+    padding-top: 18px;
+}
+
+.stage-info {
+    font-size: 1.05rem;
+    color: #ffaa00;
+    font-weight: 800;
+}
+
+.score-info {
+    font-size: .75rem;
+    color: #83859c;
+    margin-top: 2px;
+}
+
+.gold-info {
+    font-size: .8rem;
+    color: #ffd700;
+    font-weight: 700;
+}
+
+/* =========================
+   상태
+========================= */
+
+.player-status-section {
+    width: 100%;
+    margin-top: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.status-bar-group {
+    width: 100%;
+}
+
+.hp-label,
+.mp-label {
+    font-size: .75rem;
+    font-weight: 800;
+    margin-bottom: 2px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.hp-label {
+    color: #00ffcc;
+}
+
+.mp-label {
+    color: #3399ff;
+}
+
+.bar-container {
+    width: 100%;
+    height: 18px;
+    background: #112028;
+    border-radius: 9px;
+    overflow: hidden;
+    position: relative;
+}
+
+.hp-bar-container {
+    border: 1px solid #00ffcc;
+}
+
+.mp-bar-container {
+    border: 1px solid #3399ff;
+}
+
+.player-hp-fill {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,#00b894,#00cefd);
+    transition: width .2s;
+}
+
+.player-mp-fill {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,#0066ff,#33ccff);
+    transition: width .2s;
+}
+
+/* =========================
+   몬스터 HP
+========================= */
+
+.monster-hp-section {
+    width: 100%;
+    margin-top: 6px;
+}
+
+.monster-hp-label {
+    font-size: .7rem;
+    font-weight: 700;
+    color: #ff5577;
+    margin-bottom: 2px;
+}
+
+.monster-hp-bar-container {
+    width: 100%;
+    height: 16px;
+    background: #1d1e36;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.monster-hp-fill {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,#ff0055,#ff4400);
+    transition: width .15s;
+}
+
+.hp-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .7rem;
+    font-weight: 800;
+    text-shadow: 0 0 3px #000;
+}
+
+/* =========================
+   몬스터
+========================= */
+
+.monster-area {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    touch-action: manipulation;
+    flex: 1;
+}
+
+.monster-emoji {
+    font-size: 7rem;
+    transition: transform .05s, filter .15s;
+    filter: drop-shadow(0 0 5px rgba(0,0,0,.5));
+}
+
+.monster-emoji:active {
+    transform: scale(.92);
+}
+
+.hit {
+    animation: hit-red-glow .15s ease-in-out;
+}
+
+@keyframes hit-red-glow {
+    0% {
+        transform: scale(.95);
+        filter: drop-shadow(0 0 25px #ff0033) brightness(1.3);
+    }
+
+    50% {
+        transform: scale(.9) rotate(-4deg);
+        filter: drop-shadow(0 0 35px red) brightness(1.6);
+    }
+
+    100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 5px rgba(0,0,0,.5));
+    }
+}
+
+/* =========================
+   데미지
+========================= */
+
+.damage-pop {
+    position: absolute;
+    color: #ff3366;
+    font-size: 1.2rem;
+    font-weight: 800;
+    pointer-events: none;
+    animation: float-up .5s ease-out forwards;
+    z-index: 5;
+}
+
+.damage-pop.crit {
+    color: #ffcc00;
+    font-size: 1.5rem;
+}
+
+.damage-pop.drop-msg {
+    color: #00ffcc;
+    font-size: .95rem;
+    animation: float-up-slow 2s ease-out forwards;
+    white-space: nowrap;
+}
+
+@keyframes float-up {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+}
+
+@keyframes float-up-slow {
+    0% {
+        opacity: 1;
+    }
+
+    70% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-40px);
+    }
+}
+
+/* =========================
+   하단
+========================= */
+
+.bottom-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    z-index: 5;
+    min-height: 0;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 2px;
+    width: 100%;
+}
+
+.tab-btn {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+    touch-action: manipulation;
+    padding: 6px 0;
+    background: #18192e;
+    border: 1px solid #272948;
+    color: #83859c;
+    border-radius: 8px 8px 0 0;
+    font-size: .65rem;
+    font-weight: 700;
+}
+
+.tab-btn.active {
+    background: #232545;
+    color: #00ffcc;
+    border-color: #00ffcc;
+}
+
+.tab-content {
+    width: 100%;
+    height: 160px;
+    min-height: 0;
+    max-height: 160px;
+    flex: 0 0 160px;
+    background: #18192e;
+    border: 1px solid #272948;
+    border-radius: 0 0 12px 12px;
+    padding: 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    display: none;
+}
+
+.tab-content.active {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* =========================
+   스킬
+========================= */
+
+.skill-card {
+    width: 100%;
+    background: #121324;
+    border: 1px solid #3a3c66;
+    border-radius: 10px;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    text-align: left;
+}
+
+.skill-card.ultimate {
+    border: 2px solid #ffd700;
+    background: linear-gradient(135deg,#332300,#17120a);
+    box-shadow: 0 0 12px rgba(255,215,0,.45), inset 0 0 10px rgba(255,190,0,.15);
+}
+
+.skill-card.ultimate .upgrade-title {
+    color: #ffd700;
+    text-shadow: 0 0 8px rgba(255,215,0,.55);
+}
+
+.skill-card:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.skill-mana {
+    color: #55aaff;
+    font-size: .68rem;
+    margin-top: 2px;
+}
+
+/* =========================
+   집 진행 상황
+========================= */
+
+.home-status-panel {
+    position: absolute;
+    top: 138px;
+    width: calc(100% - 34px);
+    background: rgba(242,249,252,.94);
+    border: 2px solid #a8c7c0;
+    border-radius: 16px;
+    padding: 10px 12px;
+    color: #164b1c;
+    box-shadow: 0 5px 14px rgba(0,0,0,.12);
+    z-index: 2;
+}
+
+.home-status-title {
+    text-align: center;
+    font-size: .95rem;
+    font-weight: 900;
+    margin-bottom: 6px;
+}
+
+.home-status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px 12px;
+    font-size: .68rem;
+    font-weight: 800;
+}
+
+.home-status-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+.home-status-value {
+    color: #1769d2;
+    font-weight: 900;
+    text-align: right;
+}
+
+.home-status-bars {
+    margin-top: 7px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.home-mini-bar {
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    background: #d8e0e5;
+}
+
+.home-mini-fill {
+    height: 100%;
+    width: 100%;
+    transition: width .2s;
+}
+
+.home-mini-hp {
+    background: #13b47b;
+}
+
+.home-mini-mp {
+    background: #2878ff;
+}
+
+.home-mini-monster {
+    background: #ff5577;
+}
+
+/* =========================
+   카드
+========================= */
+
+.upgrade-card {
+    width: 100%;
+    background: #121324;
+    border: 1px solid #272948;
+    border-radius: 10px;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.upgrade-card.equipped {
+    border-color: #00ff88;
+    background: #122820;
+}
+
+.upgrade-card.unlock-btn {
+    border-color: #ffaa00;
+    background: #282012;
+}
+
+.upgrade-card:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+}
+
+.upgrade-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sword-icon {
+    font-size: 1.1rem;
+}
+
+.upgrade-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.upgrade-title {
+    font-size: .8rem;
+    font-weight: 700;
+    color: #a5a7c2;
+}
+
+.upgrade-sub {
+    font-size: .7rem;
+    color: #585a78;
+    margin-top: 2px;
+}
+
+.upgrade-cost {
+    font-size: .75rem;
+    font-weight: 700;
+    color: #a5a7c2;
+    text-align: right;
+}
+
+.enhance-btn {
+    background: linear-gradient(135deg,#ffaa00,#ff6600);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    padding: 4px 8px;
+    font-size: .65rem;
+    font-weight: 800;
+    margin-top: 4px;
+}
+
+.empty-inv-msg {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #585a78;
+    font-size: .85rem;
+    font-weight: 700;
+}
+
+/* =========================
+   공통 버튼
+========================= */
+
+.action-btn {
+    border: none;
+    border-radius: 10px;
+    padding: 9px 16px;
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.home-btn {
+    position: absolute;
+    right: 12px;
+    top: 10px;
+    background: #2878ff;
+    font-size: .65rem;
+    z-index: 4;
+}
+
+.back-hunt-btn {
+    background: #19a85b;
+    font-size: .9rem;
+}
+
+/* =========================
+   모달
+========================= */
+
+.modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(18,0,0,.94);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s;
+    z-index: 20;
+    padding: 16px;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-title {
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: #00ffcc;
+}
+
+.class-btn-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 480px;
+    overflow-y: auto;
+}
+
+.class-btn {
+    width: 100%;
+    background: #18192e;
+    border: 1px solid #3399ff;
+    border-radius: 10px;
+    padding: 8px 10px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.class-icon {
+    font-size: 1.6rem;
+}
+
+.class-info {
+    text-align: left;
+}
+
+.class-name {
+    font-size: .85rem;
+    font-weight: 800;
+    color: #00ffcc;
+}
+
+.class-desc {
+    font-size: .68rem;
+    color: #aaa;
+}
+
+.name-input {
+    width: 90%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #3399ff;
+    background: #101124;
+    color: white;
+    text-align: center;
+    font-size: 1rem;
+    outline: none;
+}
+
+.start-btn {
+    background: linear-gradient(135deg,#00aa88,#00ddaa);
+    font-size: .9rem;
+}
+
+/* =========================
+   사망
+========================= */
+
+.death-title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #ff4444;
+}
+
+.death-sub {
+    font-size: .85rem;
+    color: #aaa;
+}
+
+.respawn-btn {
+    padding: 10px 24px;
+    background: linear-gradient(135deg,#ff3366,#ff0044);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: .95rem;
+    font-weight: 800;
+}
+
+/* =========================
+   집
+========================= */
+
+.home-screen {
+    position: absolute;
+    inset: 0;
+
+    /* 구름 제거 + 하늘색 */
+    background:
+        linear-gradient(
+            #87ceeb 0%,
+            #87ceeb 48%,
+            #57b94f 49%,
+            #45a944 100%
+        );
+
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 15;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.home-screen.active {
+    display: flex;
+    pointer-events: auto;
+}
+
+.game-container.home-mode .bottom-section {
+    display: none;
+}
+
+.home-title {
+    position: absolute;
+    top: 90px;
+    color: #164b1c;
+    font-size: 1.3rem;
+    font-weight: 900;
+}
+
+.house {
+    position: absolute;
+    top: 320px;
+    font-size: 5.5rem;
+    filter: drop-shadow(0 12px 5px rgba(0,0,0,.2));
+}
+
+.home-info {
+    position: absolute;
+    top: 430px;
+    color: #164b1c;
+    font-size: .8rem;
+    font-weight: 700;
+    margin-top: 5px;
+    text-align: center;
+}
+
+.home-actions {
+    position: absolute;
+    bottom: 45px;
+    display: flex;
+    gap: 8px;
+}
+
+.home-actions button {
+    border: none;
+    border-radius: 12px;
+    padding: 11px 16px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.hunt-btn {
+    background: #1769d2;
+    color: white;
+}
+
+.home-inventory-btn {
+    background: white;
+    color: #1769d2;
+}
+
+/* =========================
+   집 아이템 창
+========================= */
+
+.home-inventory-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.58);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 60;
+    padding: 18px;
+}
+
+.home-inventory-overlay.active {
+    display: flex;
+}
+
+.home-inventory-panel {
+    width: 100%;
+    height: 62%;
+    background: #18192e;
+    border: 2px solid #3399ff;
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow:
+        0 0 25px rgba(0,0,0,.7),
+        inset 0 0 15px rgba(51,153,255,.12);
+
+    display: flex;
+    flex-direction: column;
+}
+
+.home-inventory-title {
+    text-align: center;
+    color: #00ffcc;
+    font-size: 1.1rem;
+    font-weight: 900;
+    margin-bottom: 10px;
+}
+
+.home-inventory-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+}
+
+.home-inventory-list .upgrade-card {
+    background: #121324;
+}
+
+
+.home-inventory-close {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    background: #2878ff;
+    color: white;
+    font-weight: 900;
+    font-size: .85rem;
+}
+
+/* =========================
+   플레이어 피격
+========================= */
+
+.player-hit {
+    animation: player-hit-animation .2s ease-in-out;
+}
+
+@keyframes player-hit-animation {
+
+    0% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-4px);
+    }
+
+    50% {
+        transform: translateX(4px);
+    }
+
+    75% {
+        transform: translateX(-3px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+
+/* 화면 정중앙 안내 문구 */
+.damage-pop.center-msg {
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 1.05rem;
+    font-weight: 900;
+    text-shadow: 0 0 6px #000, 0 0 12px #000;
+    white-space: normal;
+    padding: 0 16px;
+    z-index: 60;
+}
+
+/* 모기 테마 */
+body.mosquito-theme { background: #1a0f06; }
+.game-container.mosquito-theme {
+    background: #2a1a0c;
+    border-color: #a0662b;
+    box-shadow: 0 0 30px rgba(160,102,43,.8), inset 0 0 20px rgba(110,70,30,.4);
+}
+.mosquito-theme .stage-info { color: #d9964a !important; text-shadow: 0 0 10px #8b5a2b; }
+
+/* 집 상점 (무기/방어구/업그레이드) */
+.game-container.home-mode .tab-buttons .tab-btn:nth-child(n+4) { display: none; }
+.shop-close-btn { display: none; }
+.game-container.home-mode.shop-open .bottom-section {
+    display: flex;
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    width: auto;
+    z-index: 30;
+    background: #121324;
+    border: 2px solid #333652;
+    border-radius: 14px;
+    padding: 8px;
+    box-shadow: 0 -4px 16px rgba(0,0,0,.5);
+}
+.game-container.home-mode.shop-open .shop-close-btn {
+    display: block;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    padding: 7px;
+    background: #333652;
+    color: #fff;
+    font-weight: 800;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="game-container" id="gameContainer">
+
+    <!-- 닉네임 / 레벨 -->
+
+    <div class="player-name" id="playerNameText">
+        이름 <span>LV:1</span>
+    </div>
+
+    <!-- 집으로 가기 -->
+
+    <button
+        class="action-btn home-btn"
+        id="homeBtn"
+        onclick="goHome()">
+        🏠 집으로
+    </button>
+
+    <!-- 닉네임 설정 -->
+
+    <div class="modal-overlay active" id="nameOverlay">
+
+        <div class="modal-title">
+            📝 닉네임을 설정하세요
+        </div>
+
+        <input
+            id="nicknameInput"
+            class="name-input"
+            type="text"
+            maxlength="12"
+            placeholder="닉네임 입력">
+
+        <button
+            class="action-btn start-btn"
+            onclick="confirmNickname()">
+            확인
+        </button>
+
+    </div>
+
+    <!-- 직업 선택 -->
+
+    <div class="modal-overlay" id="jobOverlay">
+
+        <div class="modal-title">
+            ⚔️ 직업을 선택하세요 ⚔️
+        </div>
+
+        <div class="class-btn-container">
+
+            <button
+                class="class-btn"
+                onclick="selectJob('tanker')">
+
+                <span class="class-icon">
+                    🛡️
+                </span>
+
+                <div class="class-info">
+
+                    <div class="class-name">
+                        탱커
+                    </div>
+
+                    <div class="class-desc">
+                        기본 체력 +100 / 받는 피해 -15%
+                    </div>
+
+                </div>
+
+            </button>
+
+            <button
+                class="class-btn"
+                onclick="selectJob('warrior')">
+
+                <span class="class-icon">
+                    🗡️
+                </span>
+
+                <div class="class-info">
+
+                    <div class="class-name">
+                        검사
+                    </div>
+
+                    <div class="class-desc">
+                        기본 체력 +50 / 공격력 +20%
+                    </div>
+
+                </div>
+
+            </button>
+
+            <button
+                class="class-btn"
+                onclick="selectJob('mage')">
+
+                <span class="class-icon">
+                    🪄
+                </span>
+
+                <div class="class-info">
+
+                    <div class="class-name">
+                        마법사
+                    </div>
+
+                    <div class="class-desc">
+                        기본 마나 +50 / 치명타 +10%
+                    </div>
+
+                </div>
+
+            </button>
+
+            <button
+                class="class-btn"
+                onclick="selectJob('archer')">
+
+                <span class="class-icon">
+                    🏹
+                </span>
+
+                <div class="class-info">
+
+                    <div class="class-name">
+                        궁수
+                    </div>
+
+                    <div class="class-desc">
+                        골드 +10% / 치명타 +5%
+                    </div>
+
+                </div>
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- 사망 -->
+
+    <div class="modal-overlay" id="deathOverlay">
+
+        <div class="death-title">
+            💀 사망하셨습니다!
+        </div>
+
+        <div class="death-sub">
+            보유 골드가 초기화되었습니다.
+        </div>
+
+        <button
+            class="respawn-btn"
+            onclick="respawnPlayer()">
+            🔄 재도전하기
+        </button>
+
+    </div>
+
+    <!-- =========================
+         사냥 화면
+    ========================== -->
+
+    <div
+        id="huntScreen"
+        style="
+            width:100%;
+            height:100%;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:space-between;
+        "
+    >
+
+        <div class="header">
+
+            <div class="stage-info" id="stageText">
+                STAGE 1 - 괴물 등장
+            </div>
+
+            <div class="score-info">
+
+                <span
+                    id="playerJobText"
+                    style="color:#00ffcc;font-weight:bold;">
+                    [직업]
+                </span>
+
+                |
+
+                처치:
+
+                <span id="killCount">
+                    0
+                </span>마리
+
+            </div>
+
+            <div class="gold-info">
+
+                💰 골드:
+
+                <span id="goldText">
+                    0
+                </span>
+
+            </div>
+
+            <div class="player-status-section">
+
+                <div class="status-bar-group">
+
+                    <div class="hp-label">
+
+                        <span id="monsterAtkText">
+                            🛡️ 체력 (5초마다 피격)
+                        </span>
+
+                        <span id="defStatText">
+                            피해 감소: 0%
+                        </span>
+
+                    </div>
+
+                    <div class="bar-container hp-bar-container">
+
+                        <div
+                            class="player-hp-fill"
+                            id="playerHpFill">
+                        </div>
+
+                        <div
+                            class="hp-text"
+                            id="playerHpText">
+                            100 / 100
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="status-bar-group">
+
+                    <div class="mp-label">
+                        <span>💧 마나</span>
+                    </div>
+
+                    <div class="bar-container mp-bar-container">
+
+                        <div
+                            class="player-mp-fill"
+                            id="playerMpFill">
+                        </div>
+
+                        <div
+                            class="hp-text"
+                            id="playerMpText">
+                            100 / 100
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="monster-hp-section">
+
+                <div class="monster-hp-label">
+                    👾 몬스터 체력
+                </div>
+
+                <div class="monster-hp-bar-container">
+
+                    <div
+                        class="monster-hp-fill"
+                        id="monsterHpFill">
+                    </div>
+
+                    <div
+                        class="hp-text"
+                        id="monsterHpText">
+                        10 / 10
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div
+            class="monster-area"
+            id="monsterArea">
+
+            <div
+                class="monster-emoji"
+                id="monster">
+                🧟‍♂️
+            </div>
+
+        </div>
+
+        <div class="bottom-section">
+
+            <button type="button" class="shop-close-btn" onclick="closeHomeShop()">✕ 상점 닫기</button>
+
+            <div class="tab-buttons">
+
+                <button
+                    class="tab-btn active"
+                    type="button"
+                    onclick="switchTab('weapon')"
+                    id="weaponTabBtn">
+                    ⚔️ 무기
+                </button>
+
+                <button
+                    class="tab-btn"
+                    type="button"
+                    onclick="switchTab('armor')">
+                    🛡️ 방어구
+                </button>
+
+                <button
+                    class="tab-btn"
+                    type="button"
+                    onclick="switchTab('statUpgrade')">
+                    🚀 업그레이드
+                </button>
+
+                <button
+                    class="tab-btn"
+                    onclick="switchTab('inventory')"
+                    type="button">
+                    🎒 인벤토리
+                </button>
+
+                <button
+                    class="tab-btn"
+                    onclick="switchTab('skills')"
+                    id="skillsTabBtn"
+                    type="button">
+                    ✨ 스킬
+                </button>
+
+            </div>
+
+            <div
+                class="tab-content active"
+                id="weaponTab">
+            </div>
+
+            <div
+                class="tab-content"
+                id="armorTab">
+            </div>
+
+            <div
+                class="tab-content"
+                id="statUpgradeTab">
+            </div>
+
+            <div
+                class="tab-content"
+                id="inventoryTab">
+            </div>
+
+            <div
+                class="tab-content"
+                id="skillsTab">
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- =========================
+         집 화면
+    ========================== -->
+
+    <div
+        class="home-screen"
+        id="homeScreen">
+
+        <!-- 집 아이템 창 -->
+
+        <div
+            class="home-inventory-overlay"
+            id="homeInventoryOverlay">
+
+            <div class="home-inventory-panel">
+
+                <div class="home-inventory-title">
+                    🎒 아이템
+                </div>
+
+                <div
+                    class="home-inventory-list"
+                    id="homeInventoryContent">
+                </div>
+
+                <button
+                    class="home-inventory-close"
+                    onclick="closeHomeInventory()">
+                    닫기
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="home-title">
+            🏡 평화로운 나의 집
+        </div>
+
+        <div class="home-status-panel">
+
+            <div class="home-status-title">📊 현재 진행 상황</div>
+
+            <div class="home-status-grid">
+                <div class="home-status-row"><span>직업</span><span class="home-status-value" id="homeJobText">-</span></div>
+                <div class="home-status-row"><span>레벨</span><span class="home-status-value" id="homeLevelText">LV.1</span></div>
+                <div class="home-status-row"><span>스테이지</span><span class="home-status-value" id="homeStageText">1</span></div>
+                <div class="home-status-row"><span>처치</span><span class="home-status-value" id="homeKillsText">0마리</span></div>
+                <div class="home-status-row"><span>골드</span><span class="home-status-value" id="homeGoldText">0</span></div>
+                <div class="home-status-row"><span>공격력</span><span class="home-status-value" id="homeAtkText">1</span></div>
+                <div class="home-status-row"><span>방어</span><span class="home-status-value" id="homeDefText">0%</span></div>
+                <div class="home-status-row"><span>적 체력</span><span class="home-status-value" id="homeMonsterHpText">10 / 10</span></div>
+            </div>
+
+            <div class="home-status-bars">
+                <div class="home-mini-bar"><div class="home-mini-fill home-mini-hp" id="homeHpFill"></div></div>
+                <div class="home-mini-bar"><div class="home-mini-fill home-mini-mp" id="homeMpFill"></div></div>
+                <div class="home-mini-bar"><div class="home-mini-fill home-mini-monster" id="homeMonsterHpFill"></div></div>
+            </div>
+
+            <div class="home-status-grid" style="margin-top:5px;">
+                <div class="home-status-row"><span>내 체력</span><span class="home-status-value" id="homeHpText">100 / 100</span></div>
+                <div class="home-status-row"><span>마나</span><span class="home-status-value" id="homeMpText">100 / 100</span></div>
+            </div>
+        </div>
+
+        <div class="house">
+            🏠
+        </div>
+
+        <div class="home-info">
+            사냥을 중단한 상태입니다.<br>
+            휴식만으로는 체력이 회복되지 않습니다.
+        </div>
+
+        <div class="home-actions">
+
+            <button
+                class="hunt-btn"
+                onclick="returnToHunt()">
+                ⚔️ 사냥하기
+            </button>
+
+            <button
+                class="home-inventory-btn"
+                onclick="openHomeInventory()">
+                🎒 아이템
+            </button>
+
+            <button
+                class="home-inventory-btn"
+                onclick="openHomeShop()">
+                🛒 상점
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+/* =========================================================
+   무기 데이터
+========================================================= */
+
+const tankerWeapons = [
+"맨주먹","태권도","유도","주짓수","복싱","킥복싱","무에타이",
+"합기도","검도","씨름","레슬링","극진가라데","삼보","택견",
+"우슈","절권도","크라브마가","아이키도","카포에라","시라트",
+"펜싱","가라데","쿵푸","소림권","팔극권","태극권","당랑권",
+"취권","형의권","팔괘장","수박","십팔기","24반무예",
+"칼리 아르니스","펜칵 시라트","무에보란","레트웨이",
+"보비남","보카토르","슈트사일","프로레슬링","슈토",
+"판크라치온","사바트","바르티츠","발리투도","거합도",
+"나기나타도","총검도","조선세법","본국검","환도술","쌍수도",
+"예도","영춘권","홍가권","채리불권","백학권","용권","호권",
+"표권","사권","학권","근접격투술","살랏","야파","키마포",
+"루타 리브레","마카피투","실룸밤","칼라리파야투","가트카",
+"말라캄브","타이치","치공 무술","내가권","외가권","벽괘장",
+"통비권","팔권","지술권","미종권","탄퇴","송도관 가라데",
+"강유류 가라데","사도관 가라데","대도숙 쿠도","MMA 격투",
+"용무도","특공무술","경호무술","금강권","패왕권","아수라권",
+"투신권","용아권","천마권","뇌전권","무신 패왕권",
+"맞으면 안 아플것 같지만 엄청난 기술"
+];
+
+const warriorWeapons = [
+"나무 몽둥이","녹슨 단검","돌도끼","뼈 단검","목검",
+"청동 검","철 단검","철퇴","철검","강철 단검","삼지창",
+"할버드","카타나","롱소드","클레이모어","배틀액스","모닝스타",
+"월도","쌍검","세이버","레이피어","팔카타","글레이브",
+"체인 메이스","워해머","사벨","바스타드 소드","가시 몽둥이",
+"파이크","플레이일","글레이브 세이버","대검","츠바이핸더",
+"시미터","쿠크리","에스토크","시저스 소드","룬 단검",
+"은빛 롱소드","기사단의 검","미스릴 검","오리하르콘 단검",
+"마법 부여 검","용의 이빨 단검","칠성검","청룡언월도",
+"장팔사모","화랑검","천호검","흑철 대검","바람의 세이버",
+"화염의 검","빙설의 도끼","뇌전의 레이피어","대지의 워해머",
+"어둠의 단검","성광의 롱소드","독사의 창","파멸의 클레이모어",
+"영혼 절단검","거인족의 둔기","아다만티움 검","드래곤 슬레이어",
+"혈투의 도끼","흑영 카타나","천사령의 검","마왕의 대검",
+"성검 가라틴","신성검 두란달","마검 티르빙","불멸의 카타나",
+"시공간의 검","혜성의 창","태양의 워해머","심연의 세이버",
+"종말의 대검","창공의 레이피어","신벌의 모닝스타",
+"용제패왕도","은하수의 검","성운의 할버드","초신성 대검",
+"영원의 사벨","세계수의 몽둥이","차원 절단검","황혼의 츠바이핸더",
+"여명의 카타나","신령의 칠성검","환상검 레바테인","구원의 검",
+"천상의 창","신화의 대검","창조주의 검","파괴신의 둔기",
+"무한의 카타나","영겁의 세이버","주신검 올림푸스","전설의 마검",
+"창천의 절대검","엑스칼리버"
+];
+
+const mageWeapons = [
+"연습용 지팡이","나무 완드","오크 지팡이","초보 마법서","수정 완드",
+"청동 지팡이","입문자의 입문서","루비 완드","사파이어 완드",
+"에메랄드 지팡이","원소의 완드","학자의 마법서","마력의 지팡이",
+"은빛 완드","현자의 지팡이","고대 마도서","마나의 보주",
+"소환사의 지팡이","원소 마도서","번개의 완드","얼음의 지팡이",
+"화염의 완드","대지의 마법서","바람의 완드","빛의 지팡이",
+"암흑 완드","혼돈의 마도서","성도서","미스릴 완드","룬 문자 지팡이",
+"대마법사 완드","별빛 지팡이","달빛 완드","태양의 마력서",
+"혜성의 지팡이","아카데미 총장 지팡이","금서목록 마도서",
+"마룡의 성주","원소 주옥","영혼의 마도서","시공간 완드",
+"혈마법서","네크로맨서 지팡이","드래곤 하트 완드",
+"아다만티움 스태프","성령의 마법서","칠흑의 보주","파멸의 스태프",
+"심연의 마도서","천상의 지팡이","신성한 구슬","태초의 완드",
+"마왕의 마법서","빅뱅의 스태프","은하 마도서","신화의 지팡이",
+"절대자의 보주","창조의 스태프","파괴의 마도서","전설의 마법서",
+"오브 오브 스톰","크리스탈 스태프","엘프의 나무 완드","고대의 소환서",
+"정령의 지팡이","불꽃의 지팡이","서리 마도서","뇌전의 완드",
+"시간의 지팡이","공간의 마도서","중력의 지팡이","유성의 완드",
+"차원의 마도서","신성 마법서","암도서","환영의 지팡이",
+"저주받은 완드","봉인의 마도서","금기의 지팡이","생명의 마법서",
+"소멸의 완드","무한의 스태프","신령의 마도서","아포칼립스 스태프",
+"영겁의 지팡이","신성의 성서","마력 폭발의 완드","창천의 스태프",
+"주신의 지팡이","만물의 마도서","세계수의 지팡이","용의 눈 완드",
+"별의 마도서","빅뱅 완드","초신성 스태프","우주의 마도서",
+"신화의 보주","창세의 지팡이","마도왕의 지팡이","효자손"
+];
+
+const archerWeapons = [
+"새총","목제 숏보우","가죽 끈 활","사냥꾼의 활","강화 숏보우",
+"석궁","청동 활","긴 나무 활","철제 석궁","강철 컴포지트 보우",
+"정찰병의 활","장궁","컴파운드 보우","헤비 크로스보우","바람의 활",
+"명사수의 석궁","엘프의 활","은빛 장궁","강철 석궁","쌍발 석궁",
+"바람갈퀴 활","서리 활","화염 석궁","번개 활","암살자의 석궁",
+"독니 활","대형 석궁","미스릴 활","오리하르콘 석궁","용의 날개 활",
+"발리스타","천공의 활","칠흑의 석궁","태양의 활","달빛 석궁",
+"혜성의 활","대마도사의 궁시","드래곤 보우","아다만티움 석궁",
+"신성한 활","심연의 석궁","파멸의 활","혈마 석궁","영혼 추적 활",
+"시공간 석궁","천사의 활","마왕의 석궁","절대자의 활","신화의 석궁",
+"태초의 활","신궁의 활","창공의 석궁","은하수 활","초신성 석궁",
+"영겁의 활","차원 절단 석궁","창조주의 활","파괴신의 석궁",
+"무한의 활","전설의 신궁","단궁","반곡궁","각궁","수궁","목궁",
+"철궁","강궁","연경궁","연사 석궁","삼발 석궁","스나이퍼 보우",
+"크리스탈 활","정령의 활","정령 화염 석궁","정령 서리 활","뇌전 석궁",
+"바람 정령 활","대지 석궁","성광의 활","암흑 석궁","저격궁",
+"거룡 석궁","유성 활","시간의 석궁","공간의 활","중력 석궁",
+"환영 활","저주 석궁","봉인 석궁","생명의 활","소멸 석궁",
+"아포칼립스 보우","창천 석궁","신령의 활","주신의 석궁",
+"세계수의 활","용아 석궁","별빛 활","우주 석궁","창세의 궁시","총"
+];
+
+/* =========================================================
+   스킬 데이터
+========================================================= */
+
+const jobSkills = {
+    tanker: [
+        {id:1,name:"레전드 세계 때리기",desc:"기존 공격력의 2배 대미지",mana:30n,mult:2n,den:1n},
+        {id:2,name:"가",desc:"운석을 떨어트려 기존 공격력의 2.5배 대미지",mana:50n,mult:5n,den:2n},
+        {id:3,name:"엘붕이",desc:"기존 공격력의 5배 대미지",mana:100n,mult:5n,den:1n,ultimate:true}
+    ],
+    warrior: [
+        {id:1,name:"세로 베기",desc:"기존 공격력의 2배 대미지",mana:30n,mult:2n,den:1n},
+        {id:2,name:"가로 베기",desc:"기존 공격력의 2배 대미지",mana:30n,mult:2n,den:1n},
+        {id:3,name:"세계 찌르기",desc:"기존 공격력의 2.5배 대미지",mana:35n,mult:25n,den:10n},
+        {id:4,name:"발도술",desc:"기존 공격력의 5배 대미지",mana:100n,mult:5n,den:1n},
+        {id:5,name:"섬멸",desc:"10% 확률 즉사 / 90% 확률 10마리 동안 공격력 절반",mana:100n,mult:1n,den:1n}
+    ],
+    mage: [
+        {id:1,name:"워터볼",desc:"데미지 0",mana:1n,mult:0n,den:1n},
+        {id:2,name:"윈드볼",desc:"기존 공격력의 1.5배 대미지",mana:25n,mult:15n,den:10n},
+        {id:3,name:"진흙볼",desc:"기존 공격력의 1.5배 대미지",mana:25n,mult:15n,den:10n},
+        {id:4,name:"번개볼",desc:"기존 공격력의 2배 대미지",mana:30n,mult:2n,den:1n},
+        {id:5,name:"불알 던지기",desc:"기존 공격력의 6배 대미지",mana:100n,mult:6n,den:1n,ultimate:true}
+    ],
+    archer: [
+        {id:1,name:"약하게 쏘기",desc:"기존 대미지 그대로",mana:5n,mult:1n,den:1n},
+        {id:2,name:"조금 약하게 쏘기",desc:"기존 공격력의 1.1배 대미지",mana:10n,mult:11n,den:10n},
+        {id:3,name:"보통 쏘기",desc:"기존 공격력의 1.5배 대미지",mana:30n,mult:15n,den:10n},
+        {id:4,name:"조금 세게 쏘기",desc:"기존 공격력의 2배 대미지",mana:50n,mult:2n,den:1n},
+        {id:5,name:"세게 쏘기",desc:"기존 공격력의 2.5배 대미지",mana:70n,mult:25n,den:10n},
+        {id:6,name:"진짜 세게 쏘기",desc:"기존 공격력의 5배 대미지",mana:100n,mult:5n,den:1n},
+        {id:7,name:"진짜 레전드 세게 쏠려고 하다가 줄 끊어져서 손 다치기",desc:"10마리 동안 기존 공격력의 절반 대미지",mana:1n,mult:1n,den:2n,ultimate:true}
+    ]
+};
+
+let warriorWeakAttackCount = 0;
+let archerWeakAttackCount = 0;
+
+/* =========================================================
+   게임 데이터
+========================================================= */
+
+let weapons = [];
+let selectedJob = null;
+
+const armors = [
+{id:1,name:"흙 갑옷",dmgRedPct:2n,cost:20n},
+{id:2,name:"가죽 갑옷",dmgRedPct:5n,cost:100n},
+{id:3,name:"돌 갑옷",dmgRedPct:10n,cost:500n},
+{id:4,name:"청동 갑옷",dmgRedPct:15n,cost:2500n},
+{id:5,name:"철 갑옷",dmgRedPct:20n,cost:12000n},
+{id:6,name:"다이아몬드 갑옷",dmgRedPct:25n,cost:60000n},
+{id:7,name:"네더라이트 갑옷",dmgRedPct:30n,cost:300000n},
+{id:8,name:"흑요석 갑옷",dmgRedPct:35n,cost:1500000n},
+{id:9,name:"기반암 갑옷",dmgRedPct:40n,cost:8000000n},
+{id:10,name:"노키아 갑옷",dmgRedPct:50n,cost:50000000n}
+];
+
+const statUpgrades = {
+
+    maxHp:{
+        level:0n,
+        baseCost:40n,
+        costMult:2n,
+        maxLevel:100n,
+        icon:"❤️",
+        name:"최대 체력"
+    },
+
+    critChance:{
+        level:0n,
+        baseCost:50n,
+        costMult:2n,
+        maxLevel:50n,
+        icon:"🎯",
+        name:"치명타 확률"
+    },
+
+    goldBonus:{
+        level:0n,
+        baseCost:30n,
+        costMult:2n,
+        maxLevel:100n,
+        icon:"🪙",
+        name:"골드 보너스"
+    },
+
+    luck:{
+        level:0n,
+        baseCost:50n,
+        costMult:2n,
+        maxLevel:20n,
+        icon:"🍀",
+        name:"행운"
+    }
+
+};
+
+const inventory = {
+    hpPotion:0,
+    mpPotion:0,
+    luckPotion:0
+};
+
+/* =========================================================
+   상태 변수
+========================================================= */
+
+let currentArmorIdx = -1;
+
+const baseMonsters = [
+    "🧟‍♂️",
+    "🧟",
+    "🧟‍♀️"
+];
+
+let monsterQueue = [];
+
+let nickname = "";
+let playerLevel = 1;
+
+let stage = 1;
+let kills = 0;
+let gold = 0n;
+
+let currentWeaponIdx = 0;
+
+let basePlayerMaxHp = 100n;
+let playerMaxHp = 100n;
+let playerHp = 100n;
+
+let playerMaxMp = 100n;
+let playerMp = 100n;
+
+let monsterMaxHp = 10n;
+let monsterHp = 10n;
+
+let isDragon = false;
+let isMosquito = false;
+let mosquitoPrevHp = 0n;
+let mosquitoNormalMaxHp = 10n;
+let isBoss = false;
+
+let gameMode = "hunting";
+
+let monsterAttackTimer = null;
+let monsterAttackInterval = 5000;
+
+
+/* =========================================================
+   저장 / 불러오기
+   - 진행도 + 장비 강화 + 인벤토리 + 현재 화면/탭/스크롤 저장
+   - 브라우저별 localStorage 저장
+========================================================= */
+const SAVE_KEY = "Monster_RPG_REBUILT_SAVE_V2";
+try { localStorage.removeItem("Monster_RPG_REBUILT_SAVE_V1"); } catch(e) {}
+let currentTab = "weapon";
+let tabScrollPositions = {};
+let saveTimer = null;
+
+function serializeSaveValue(value) {
+    if (typeof value === "bigint") return {__bigint__: value.toString()};
+    if (Array.isArray(value)) return value.map(serializeSaveValue);
+    if (value && typeof value === "object") {
+        const out = {};
+        for (const [k,v] of Object.entries(value)) out[k] = serializeSaveValue(v);
+        return out;
+    }
+    return value;
+}
+
+function reviveSaveValue(value) {
+    if (Array.isArray(value)) return value.map(reviveSaveValue);
+    if (value && typeof value === "object") {
+        if (value.__bigint__ !== undefined) return BigInt(value.__bigint__);
+        const out = {};
+        for (const [k,v] of Object.entries(value)) out[k] = reviveSaveValue(v);
+        return out;
+    }
+    return value;
+}
+
+function getSaveState() {
+    return serializeSaveValue({
+        nickname, selectedJob, playerLevel, stage, kills, gold,
+        currentWeaponIdx, currentArmorIdx,
+        basePlayerMaxHp, playerMaxHp, playerHp,
+        playerMaxMp, playerMp,
+        monsterMaxHp, monsterHp,
+        monsterEmoji: monster ? monster.innerText : "",
+        isDragon, isBoss, isMosquito, mosquitoPrevHp, mosquitoNormalMaxHp, gameMode,
+        monsterQueue,
+        inventory,
+        statUpgrades,
+        weapons: weapons.map(w => ({
+            id:w.id, name:w.name, baseAtk:w.baseAtk,
+            cost:w.cost, reqKills:w.reqKills, enhanceLv:w.enhanceLv
+        })),
+        warriorWeakAttackCount,
+        archerWeakAttackCount,
+        monsterAttackInterval,
+        currentTab,
+        tabScrollPositions,
+        homeInventoryOpen: homeInventoryOverlay && homeInventoryOverlay.classList.contains("active"),
+        deathOpen: deathOverlay && deathOverlay.classList.contains("active")
+    });
+}
+
+function saveGameState(immediate=false) {
+    if (saveTimer) clearTimeout(saveTimer);
+    const write = () => {
+        try { localStorage.setItem(SAVE_KEY, JSON.stringify(getSaveState())); }
+        catch(e) { console.warn("게임 저장 실패", e); }
+    };
+    if (immediate) write();
+    else saveTimer = setTimeout(write, 50);
+}
+
+function loadGameState() {
+    try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return false;
+        const s = reviveSaveValue(JSON.parse(raw));
+        if (!s.nickname || !s.selectedJob) return false;
+
+        nickname = s.nickname;
+        selectedJob = s.selectedJob;
+        playerLevel = Number(s.playerLevel ?? 1);
+        stage = Number(s.stage ?? 1);
+        kills = Number(s.kills ?? 0);
+        gold = s.gold ?? 0n;
+        currentWeaponIdx = Number(s.currentWeaponIdx ?? 0);
+        currentArmorIdx = Number(s.currentArmorIdx ?? -1);
+        basePlayerMaxHp = s.basePlayerMaxHp ?? 100n;
+        playerMaxHp = s.playerMaxHp ?? basePlayerMaxHp;
+        playerHp = s.playerHp ?? playerMaxHp;
+        playerMaxMp = s.playerMaxMp ?? 100n;
+        playerMp = s.playerMp ?? playerMaxMp;
+        monsterMaxHp = s.monsterMaxHp ?? 10n;
+        monsterHp = s.monsterHp ?? monsterMaxHp;
+        isDragon = !!s.isDragon;
+        isMosquito = !!s.isMosquito;
+        mosquitoPrevHp = s.mosquitoPrevHp ?? 0n;
+        mosquitoNormalMaxHp = s.mosquitoNormalMaxHp ?? monsterMaxHp;
+        isBoss = !!s.isBoss;
+        gameMode = s.gameMode || "hunting";
+        monsterQueue = Array.isArray(s.monsterQueue) ? s.monsterQueue : [];
+        warriorWeakAttackCount = Number(s.warriorWeakAttackCount ?? 0);
+        archerWeakAttackCount = Number(s.archerWeakAttackCount ?? 0);
+        monsterAttackInterval = Number(s.monsterAttackInterval ?? 5000);
+        currentTab = s.currentTab || "weapon";
+        tabScrollPositions = s.tabScrollPositions || {};
+
+        inventory.hpPotion = Number(s.inventory?.hpPotion ?? 0);
+        inventory.mpPotion = Number(s.inventory?.mpPotion ?? 0);
+        inventory.luckPotion = Number(s.inventory?.luckPotion ?? 0);
+
+        if (s.statUpgrades) {
+            for (const key of Object.keys(statUpgrades)) {
+                if (s.statUpgrades[key]) statUpgrades[key].level = s.statUpgrades[key].level ?? 0n;
+            }
+        }
+
+        initWeapons();
+        if (Array.isArray(s.weapons)) {
+            s.weapons.forEach((saved, i) => {
+                if (weapons[i] && saved.enhanceLv !== undefined) weapons[i].enhanceLv = saved.enhanceLv;
+            });
+        }
+        currentWeaponIdx = Math.max(0, Math.min(currentWeaponIdx, weapons.length - 1));
+        currentArmorIdx = Math.max(-1, Math.min(currentArmorIdx, armors.length - 1));
+
+        if (s.monsterEmoji) monster.innerText = s.monsterEmoji;
+        else monster.innerText = isMosquito ? "🦟" : isDragon ? "🐉" : (isBoss ? "🧌" : (monsterQueue[0] || "🧟‍♂️"));
+        if (!isMosquito && !isDragon && !isBoss && monsterQueue.length === 0) shuffleMonsters();
+
+        nameOverlay.classList.remove("active");
+        jobOverlay.classList.remove("active");
+        deathOverlay.classList.toggle("active", !!s.deathOpen);
+        homeInventoryOverlay.classList.toggle("active", !!s.homeInventoryOpen && gameMode === "home");
+        homeScreen.classList.toggle("active", gameMode === "home");
+        gameContainer.classList.toggle("home-mode", gameMode === "home");
+        homeBtn.style.display = gameMode === "home" ? "none" : "block";
+
+        updateUI();
+        switchTab(currentTab, false);
+        requestAnimationFrame(() => {
+            const map = {weapon:weaponTab, armor:armorTab, statUpgrade:statUpgradeTab, inventory:inventoryTab, skills:skillsTab};
+            for (const [key,tab] of Object.entries(map)) if (tab) tab.scrollTop = Number(tabScrollPositions[key] || 0);
+            if (gameMode === "home" && homeInventoryOverlay.classList.contains("active")) renderHomeInventory();
+        });
+        if (gameMode === "hunting" && !deathOverlay.classList.contains("active")) startMonsterAttackLoop();
+        return true;
+    } catch(e) {
+        console.warn("게임 불러오기 실패", e);
+        return false;
+    }
+}
+
+/* =========================================================
+   DOM
+========================================================= */
+
+const gameContainer =
+document.getElementById("gameContainer");
+
+const monster =
+document.getElementById("monster");
+
+const monsterArea =
+document.getElementById("monsterArea");
+
+const playerHpFill =
+document.getElementById("playerHpFill");
+
+const playerHpText =
+document.getElementById("playerHpText");
+
+const playerMpFill =
+document.getElementById("playerMpFill");
+
+const playerMpText =
+document.getElementById("playerMpText");
+
+const monsterHpFill =
+document.getElementById("monsterHpFill");
+
+const monsterHpText =
+document.getElementById("monsterHpText");
+
+const defStatText =
+document.getElementById("defStatText");
+
+const monsterAtkText =
+document.getElementById("monsterAtkText");
+
+const stageText =
+document.getElementById("stageText");
+
+const killCount =
+document.getElementById("killCount");
+
+const goldText =
+document.getElementById("goldText");
+
+const playerJobText =
+document.getElementById("playerJobText");
+
+const playerNameText =
+document.getElementById("playerNameText");
+
+const nameOverlay =
+document.getElementById("nameOverlay");
+
+const jobOverlay =
+document.getElementById("jobOverlay");
+
+const deathOverlay =
+document.getElementById("deathOverlay");
+
+const homeScreen =
+document.getElementById("homeScreen");
+
+const huntScreen =
+document.getElementById("huntScreen");
+
+const homeBtn =
+document.getElementById("homeBtn");
+
+const weaponTabBtn =
+document.getElementById("weaponTabBtn");
+
+const weaponTab =
+document.getElementById("weaponTab");
+
+const armorTab =
+document.getElementById("armorTab");
+
+const statUpgradeTab =
+document.getElementById("statUpgradeTab");
+
+const inventoryTab =
+document.getElementById("inventoryTab");
+const skillsTab =
+document.getElementById("skillsTab");
+
+const homeJobText = document.getElementById("homeJobText");
+const homeLevelText = document.getElementById("homeLevelText");
+const homeStageText = document.getElementById("homeStageText");
+const homeKillsText = document.getElementById("homeKillsText");
+const homeGoldText = document.getElementById("homeGoldText");
+const homeAtkText = document.getElementById("homeAtkText");
+const homeDefText = document.getElementById("homeDefText");
+const homeMonsterHpText = document.getElementById("homeMonsterHpText");
+const homeHpText = document.getElementById("homeHpText");
+const homeMpText = document.getElementById("homeMpText");
+const homeHpFill = document.getElementById("homeHpFill");
+const homeMpFill = document.getElementById("homeMpFill");
+const homeMonsterHpFill = document.getElementById("homeMonsterHpFill");
+
+/* 집 아이템 창 */
+
+const homeInventoryOverlay =
+document.getElementById("homeInventoryOverlay");
+
+const homeInventoryContent =
+document.getElementById("homeInventoryContent");
+
+/* =========================================================
+   몬스터 큐
+========================================================= */
+
+function shuffleMonsters() {
+
+    monsterQueue = [...baseMonsters];
+
+    for(let i = monsterQueue.length - 1; i > 0; i--) {
+
+        const j =
+        Math.floor(Math.random() * (i + 1));
+
+        [
+            monsterQueue[i],
+            monsterQueue[j]
+        ] =
+        [
+            monsterQueue[j],
+            monsterQueue[i]
+        ];
+    }
+}
+
+/* =========================================================
+   닉네임
+========================================================= */
+
+function confirmNickname() {
+
+    const input =
+    document.getElementById("nicknameInput");
+
+    const value =
+    input.value.trim();
+
+    if(!value) {
+
+        alert("닉네임을 입력해주세요.");
+
+        return;
+    }
+
+    nickname = value;
+
+    playerNameText.innerHTML =
+    `${nickname} <span>LV:${playerLevel}</span>`;
+
+    nameOverlay.classList.remove("active");
+    jobOverlay.classList.add("active");
+    saveGameState();
+}
+
+/* =========================================================
+   직업
+========================================================= */
+
+function selectJob(jobKey) {
+
+    selectedJob = jobKey;
+
+    if(jobKey === "tanker") {
+
+        basePlayerMaxHp = 200n;
+
+        playerJobText.innerText =
+        "🛡️ 탱커";
+
+        weaponTabBtn.innerText =
+        "🥋 무술";
+
+    }
+
+    else if(jobKey === "warrior") {
+
+        basePlayerMaxHp = 150n;
+
+        playerJobText.innerText =
+        "🗡️ 검사";
+
+        weaponTabBtn.innerText =
+        "⚔️ 무기";
+
+    }
+
+    else if(jobKey === "mage") {
+
+        playerMaxMp = 150n;
+        playerMp = 150n;
+
+        playerJobText.innerText =
+        "🪄 마법사";
+
+        weaponTabBtn.innerText =
+        "⚔️ 무기";
+
+    }
+
+    else if(jobKey === "archer") {
+
+        playerJobText.innerText =
+        "🏹 궁수";
+
+        weaponTabBtn.innerText =
+        "⚔️ 무기";
+    }
+
+    initWeapons();
+
+    playerMaxHp =
+    basePlayerMaxHp;
+
+    playerHp =
+    playerMaxHp;
+
+    jobOverlay.classList.remove("active");
+
+    gameMode = "hunting";
+
+    startMonsterAttackLoop();
+
+    updateUI();
+    saveGameState(true);
+}
+
+/* =========================================================
+   무기 초기화
+========================================================= */
+
+function initWeapons() {
+
+    weapons = [];
+
+    let baseAtk = 1n;
+    let baseCost = 10n;
+
+    const earlyCosts =
+    [0n,5n,15n,45n,100n];
+
+    let activeList = [];
+
+    if(selectedJob === "tanker")
+        activeList = tankerWeapons;
+
+    else if(selectedJob === "warrior")
+        activeList = warriorWeapons;
+
+    else if(selectedJob === "mage")
+        activeList = mageWeapons;
+
+    else if(selectedJob === "archer")
+        activeList = archerWeapons;
+
+    for(let i = 1; i <= activeList.length; i++) {
+
+        const reqKills =
+        i <= 5
+        ? i - 1
+        : (i - 1) * 3;
+
+        const actualCost =
+        i <= 5
+        ? earlyCosts[i - 1]
+        : baseCost;
+
+        weapons.push({
+
+            id:i,
+            name:activeList[i - 1],
+            baseAtk:baseAtk,
+            cost:actualCost,
+            reqKills:reqKills,
+            enhanceLv:0n
+
+        });
+
+        baseAtk *= 2n;
+
+        if(i > 30)
+            baseCost =
+            (baseCost * 38n) / 10n;
+
+        else if(i > 15)
+            baseCost =
+            (baseCost * 34n) / 10n;
+
+        else
+            baseCost *= 3n;
+    }
+}
+
+/* =========================================================
+   숫자
+========================================================= */
+
+function formatNum(num) {
+
+    if(typeof num === "bigint") {
+
+        if(num >= 10n ** 100n)
+            return "1 구골";
+
+        if(num >= 10n ** 12n) {
+
+            const str =
+            num.toString();
+
+            const exp =
+            str.length - 1;
+
+            return `${str[0]}.${str.slice(1,2)}e+${exp}`;
+        }
+
+        return num.toLocaleString("ko-KR");
+    }
+
+    return num.toLocaleString("ko-KR");
+}
+
+/* =========================================================
+   탭
+========================================================= */
+
+function switchTab(tabName, shouldSave=true) {
+
+    document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(content => content.classList.remove("active"));
+
+    const tabs = {
+        weapon:[0,weaponTab],
+        armor:[1,armorTab],
+        statUpgrade:[2,statUpgradeTab],
+        inventory:[3,inventoryTab],
+        skills:[4,skillsTab]
+    };
+
+    const target = tabs[tabName];
+    if(!target) return;
+
+    currentTab = tabName;
+
+    document.querySelectorAll(".tab-btn")[target[0]].classList.add("active");
+    target[1].classList.add("active");
+
+    if(tabName === "weapon") renderWeaponList();
+    if(tabName === "armor") renderArmorShop();
+    if(tabName === "statUpgrade") renderStatUpgradeShop();
+    if(tabName === "inventory") renderInventory();
+    if(tabName === "skills") renderSkills();
+    if (shouldSave) saveGameState();
+}
+
+
+/* =========================================================
+   무기
+========================================================= */
+
+function getWeaponAtk(w) {
+
+    return w.baseAtk +
+    (w.baseAtk * w.enhanceLv * 20n / 100n);
+}
+
+function getEnhanceCost(w) {
+
+    let baseCost = w.cost / 10n;
+    if(baseCost < 20n) baseCost = 20n;
+
+    return baseCost *
+    (w.enhanceLv + 1n);
+}
+
+function enhanceWeapon(idx) {
+
+    const w =
+    weapons[idx];
+
+    const cost =
+    getEnhanceCost(w);
+
+    if(
+        gold >= cost &&
+        w.enhanceLv < 99n
+    ) {
+
+        gold -= cost;
+
+        const successRate =
+        100 -
+        Number(w.enhanceLv + 1n);
+
+        if(Math.random() * 100 < successRate) {
+
+            w.enhanceLv++;
+
+            showTextPop(
+                `✨ 강화 성공! (+${w.enhanceLv})`
+            );
+
+        } else {
+
+            showTextPop(
+                "💥 강화 실패..."
+            );
+        }
+
+        updateUI();
+    }
+}
+
+function renderWeaponList() {
+
+    weaponTab.innerHTML = "";
+
+    const isTanker =
+    selectedJob === "tanker";
+
+    const icon =
+    isTanker ? "🥋" : "⚔️";
+
+    const actionText =
+    isTanker ? "수련 중" : "장착 중";
+
+    weapons.forEach((w,idx) => {
+
+        const btn =
+        document.createElement("div");
+
+        btn.className =
+        "upgrade-card";
+
+        const currentAtk =
+        getWeaponAtk(w);
+
+        if(idx === currentWeaponIdx) {
+
+            btn.classList.add("equipped");
+
+            const enhCost =
+            getEnhanceCost(w);
+
+            const canEnhance =
+            gold >= enhCost &&
+            w.enhanceLv < 99n;
+
+            const nextRate =
+            100 -
+            Number(w.enhanceLv + 1n);
+
+            const enhText =
+            w.enhanceLv >= 99n
+            ? "MAX"
+            : `강화 ${nextRate}% (${formatNum(enhCost)}G)`;
+
+            btn.innerHTML = `
+
+                <div class="upgrade-left">
+
+                    <span class="sword-icon">
+                        ${icon}
+                    </span>
+
+                    <div class="upgrade-info">
+
+                        <span class="upgrade-title">
+
+                            ${w.id}. ${w.name}
+
+                            ${
+                                w.enhanceLv > 0n
+                                ? `<span style="color:#ffaa00;">
+                                   (+${w.enhanceLv})
+                                   </span>`
+                                : ""
+                            }
+
+                        </span>
+
+                        <span class="upgrade-sub">
+                            공격력:
+                            ${formatNum(currentAtk)}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="upgrade-cost">
+
+                    <div>
+                        ${actionText}
+                    </div>
+
+                    <button
+                        class="enhance-btn"
+                        ${canEnhance ? "" : "disabled"}
+                        onclick="enhanceWeapon(${idx})">
+
+                        ✨ ${enhText}
+
+                    </button>
+
+                </div>
+            `;
+        }
+
+        else if(idx <= currentWeaponIdx + 1) {
+
+            const unlocked =
+            kills >= w.reqKills;
+
+            if(!unlocked) {
+
+                btn.classList.add("unlock-btn");
+
+                btn.innerHTML = `
+
+                    <div class="upgrade-left">
+
+                        <span class="sword-icon">
+                            🔒
+                        </span>
+
+                        <div class="upgrade-info">
+
+                            <span class="upgrade-title">
+                                ${w.id}. ${w.name}
+                            </span>
+
+                            <span class="upgrade-sub">
+                                공격력:
+                                ${formatNum(currentAtk)}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="upgrade-cost">
+
+                        🔒 잠김<br>
+                        처치: ${kills}/${w.reqKills}
+
+                    </div>
+
+                `;
+            }
+
+            else {
+
+                const canBuy =
+                gold >= w.cost;
+
+                btn.style.opacity =
+                canBuy ? "1" : ".5";
+
+                btn.addEventListener("click", e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    buyWeapon(idx);
+                });
+
+                const costText =
+                w.cost === 0n
+                ? "FREE"
+                : `${formatNum(w.cost)} 골드`;
+
+                btn.innerHTML = `
+
+                    <div class="upgrade-left">
+
+                        <span class="sword-icon">
+                            ${icon}
+                        </span>
+
+                        <div class="upgrade-info">
+
+                            <span class="upgrade-title">
+                                ${w.id}. ${w.name}
+                            </span>
+
+                            <span class="upgrade-sub">
+                                공격력:
+                                ${formatNum(currentAtk)}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="upgrade-cost">
+
+                        🛒 구매하기<br>
+                        ${costText}
+
+                    </div>
+                `;
+            }
+        }
+
+        else {
+
+            btn.style.opacity = ".35";
+
+            btn.innerHTML = `
+
+                <div class="upgrade-left">
+
+                    <span class="sword-icon">
+                        🔒
+                    </span>
+
+                    <div class="upgrade-info">
+
+                        <span class="upgrade-title">
+                            ${w.id}. ${w.name}
+                        </span>
+
+                        <span class="upgrade-sub">
+                            공격력: ???
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="upgrade-cost">
+                    잠김
+                </div>
+
+            `;
+        }
+
+        weaponTab.appendChild(btn);
+    });
+}
+
+/* =========================================================
+   스킬
+========================================================= */
+
+function getSkillBaseAttack() {
+    let atk = getWeaponAtk(weapons[currentWeaponIdx]);
+    if(selectedJob === "warrior") atk = atk * 120n / 100n;
+    return atk;
+}
+
+function renderSkills() {
+    /* 버튼을 매번 새로 만들면 클릭 도중 사라지므로, 이미 있으면 상태만 갱신 */
+    const existing = skillsTab.querySelectorAll(".skill-card");
+    const skillList = jobSkills[selectedJob] || [];
+    if(selectedJob && existing.length === skillList.length && skillsTab.dataset.job === selectedJob) {
+        existing.forEach((card, i) => {
+            const sk = skillList[i];
+            card.disabled = playerMp < sk.mana || gameMode !== "hunting" || monsterHp <= 0n || playerHp <= 0n;
+        });
+        return;
+    }
+    skillsTab.dataset.job = selectedJob || "";
+    skillsTab.innerHTML = "";
+
+    if(!selectedJob) {
+        skillsTab.innerHTML = `<div class="empty-inv-msg">직업을 먼저 선택해주세요.</div>`;
+        return;
+    }
+
+    const skills = jobSkills[selectedJob] || [];
+
+    skills.forEach(skill => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "skill-card" + (skill.ultimate ? " ultimate" : "");
+        card.disabled = playerMp < skill.mana || gameMode !== "hunting" || monsterHp <= 0n || playerHp <= 0n;
+        card.addEventListener("click", e => {
+            e.preventDefault();
+            e.stopPropagation();
+            useSkill(skill.id);
+        });
+
+        const icon = skill.ultimate ? "✨" : (selectedJob === "mage" ? "🔮" : selectedJob === "archer" ? "🏹" : selectedJob === "warrior" ? "⚔️" : "🥋");
+        const dmgText = skill.id === 5 && selectedJob === "warrior" ? "10% 즉사 / 90% 공격력 절반" : skill.desc;
+
+        card.innerHTML = `
+            <div class="upgrade-left">
+                <span class="sword-icon">${icon}</span>
+                <div class="upgrade-info">
+                    <span class="upgrade-title">${skill.id}. ${skill.name}</span>
+                    <span class="upgrade-sub">${dmgText}</span>
+                    <span class="skill-mana">💧 마나 ${formatNum(skill.mana)}</span>
+                </div>
+            </div>
+            <div class="upgrade-cost">${skill.ultimate ? "궁극기" : "사용하기"}</div>
+        `;
+
+        skillsTab.appendChild(card);
+    });
+}
+
+/* 궁수 절반 데미지: 1이면 0.5로 표시, 0.5가 두 번 쌓이면 1 적용 */
+let archerHalfCarry = false;
+let archerShownHalf = false;
+function archerHalf(dmg) {
+    if(dmg <= 1n) {
+        archerShownHalf = true;
+        if(archerHalfCarry) { archerHalfCarry = false; return 1n; }
+        archerHalfCarry = true;
+        return 0n;
+    }
+    return dmg / 2n;
+}
+
+function useSkill(skillId) {
+    if(gameMode !== "hunting" || !selectedJob || playerHp <= 0n || monsterHp <= 0n) return;
+
+    const skill = (jobSkills[selectedJob] || []).find(s => s.id === skillId);
+    if(!skill || playerMp < skill.mana) {
+        showTextPop("💧 마나가 부족합니다!");
+        return;
+    }
+
+    playerMp -= skill.mana;
+    let atk = getSkillBaseAttack();
+    let damage = atk * skill.mult / skill.den;
+
+    archerShownHalf = false;
+    if(selectedJob === "warrior" && warriorWeakAttackCount > 0 && skillId !== 5) {
+        damage = archerHalf(damage);
+    }
+
+    if(selectedJob === "archer" && archerWeakAttackCount > 0 && skillId !== 7) {
+        damage = archerHalf(damage);
+    }
+
+    if(selectedJob === "warrior" && skillId === 5) {
+        if(Math.random() < 0.10) {
+            damage = monsterHp;
+            showTextPop("💥 섬멸! 적을 즉시 처치했습니다!");
+        } else {
+            warriorWeakAttackCount = 10;
+            damage = archerHalf(atk);
+            showTextPop("⚠️ 10마리 동안 공격력이 절반으로 적용됩니다.");
+        }
+    }
+
+    if(selectedJob === "archer" && skillId === 7) {
+        archerWeakAttackCount = 10;
+        damage = archerHalf(atk);
+        showTextPop("⚠️ 10마리 동안 공격력이 절반으로 적용됩니다.");
+    }
+
+    if(isMosquito && skill.mult > 0n) { damage = monsterHp; archerShownHalf = false; }
+    monsterHp -= damage;
+    if(monsterHp < 0n) monsterHp = 0n;
+
+    monster.classList.remove("hit");
+    void monster.offsetWidth;
+    monster.classList.add("hit");
+
+    showDamagePop(null, archerShownHalf ? 0.5 : damage, false);
+
+    if(monsterHp <= 0n) {
+        setTimeout(nextStage, 100);
+    }
+
+    updateUI();
+    saveGameState();
+}
+
+/* =========================================================
+   방어구
+========================================================= */
+
+function renderArmorShop() {
+
+    armorTab.innerHTML = "";
+
+    armors.forEach((a,idx) => {
+
+        const btn =
+        document.createElement("button");
+
+        btn.className =
+        "upgrade-card";
+
+        if(idx <= currentArmorIdx) {
+
+            btn.classList.add("equipped");
+            btn.disabled = true;
+
+            btn.innerHTML = `
+
+                <div class="upgrade-left">
+
+                    <span class="sword-icon">
+                        🛡️
+                    </span>
+
+                    <div class="upgrade-info">
+
+                        <span class="upgrade-title">
+                            ${a.id}. ${a.name}
+                        </span>
+
+                        <span class="upgrade-sub">
+                            피해 감소: ${a.dmgRedPct}%
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="upgrade-cost">
+
+                    ${
+                        idx === currentArmorIdx
+                        ? "착용 중"
+                        : "보유 중"
+                    }
+
+                </div>
+
+            `;
+        }
+
+        else if(idx === currentArmorIdx + 1) {
+
+            btn.disabled = false;
+
+            btn.addEventListener("click", e => {
+                e.preventDefault();
+                e.stopPropagation();
+                buyArmor(idx);
+            });
+
+            btn.innerHTML = `
+
+                <div class="upgrade-left">
+
+                    <span class="sword-icon">
+                        🛡️
+                    </span>
+
+                    <div class="upgrade-info">
+
+                        <span class="upgrade-title">
+                            ${a.id}. ${a.name}
+                        </span>
+
+                        <span class="upgrade-sub">
+                            피해 감소: ${a.dmgRedPct}%
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="upgrade-cost">
+
+                    🛒 구매하기<br>
+                    ${formatNum(a.cost)} 골드
+
+                </div>
+
+            `;
+        }
+
+        else {
+
+            btn.disabled = true;
+
+            btn.innerHTML = `
+
+                <div class="upgrade-left">
+
+                    <span class="sword-icon">
+                        🔒
+                    </span>
+
+                    <div class="upgrade-info">
+
+                        <span class="upgrade-title">
+                            ${a.id}. ${a.name}
+                        </span>
+
+                        <span class="upgrade-sub">
+                            피해 감소: ${a.dmgRedPct}%
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="upgrade-cost">
+                    잠김
+                </div>
+
+            `;
+        }
+
+        armorTab.appendChild(btn);
+    });
+}
+
+/* =========================================================
+   스탯
+========================================================= */
+
+function renderStatUpgradeShop() {
+
+    statUpgradeTab.innerHTML = "";
+
+    Object.keys(statUpgrades)
+    .forEach(key => {
+
+        const stat =
+        statUpgrades[key];
+
+        const btn =
+        document.createElement("button");
+
+        btn.className =
+        "upgrade-card";
+
+        const currentCost =
+        stat.baseCost *
+        (stat.costMult ** stat.level);
+
+        const isMax =
+        stat.level >= stat.maxLevel;
+
+        let subInfo = "";
+
+        if(key === "maxHp")
+            subInfo =
+            `최대 체력: +${stat.level * 50n}`;
+
+        else if(key === "critChance")
+            subInfo =
+            `치명타 확률: ${stat.level}%`;
+
+        else if(key === "goldBonus")
+            subInfo =
+            `골드 획득: +${stat.level * 10n}%`;
+
+        else if(key === "luck")
+            subInfo =
+            `드롭 확률: ${10n + stat.level}%`;
+
+        btn.disabled =
+        isMax ||
+        gold < currentCost;
+
+        btn.addEventListener("click", e => {
+            e.preventDefault();
+            e.stopPropagation();
+            buyStatUpgrade(key);
+        });
+
+        btn.innerHTML = `
+
+            <div class="upgrade-left">
+
+                <span class="sword-icon">
+                    ${stat.icon}
+                </span>
+
+                <div class="upgrade-info">
+
+                    <span class="upgrade-title">
+                        ${stat.name} (Lv.${stat.level})
+                    </span>
+
+                    <span class="upgrade-sub">
+                        ${subInfo}
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="upgrade-cost">
+
+                ${
+                    isMax
+                    ? "MAX"
+                    : `🛒 강화<br>
+                       ${formatNum(currentCost)} 골드`
+                }
+
+            </div>
+
+        `;
+
+        statUpgradeTab.appendChild(btn);
+    });
+}
+
+/* =========================================================
+   인벤토리
+========================================================= */
+
+function renderInventory() {
+
+    inventoryTab.innerHTML = "";
+
+    const total =
+    inventory.hpPotion +
+    inventory.mpPotion +
+    inventory.luckPotion;
+
+    if(total === 0) {
+
+        inventoryTab.innerHTML =
+        `<div class="empty-inv-msg">
+            인벤토리가 비어있습니다.
+        </div>`;
+
+        return;
+    }
+
+    const items = [
+
+        {
+            id:"hpPotion",
+            name:"체력 회복 포션",
+            icon:"🧪",
+            count:inventory.hpPotion,
+            desc:"전체 체력의 50% 회복"
+        },
+
+        {
+            id:"mpPotion",
+            name:"마나 포션",
+            icon:"💧",
+            count:inventory.mpPotion,
+            desc:"전체 마나의 50% 회복"
+        },
+
+        {
+            id:"luckPotion",
+            name:"행운 포션",
+            icon:"🍀",
+            count:inventory.luckPotion,
+            desc:"0.5% 확률로 용 소환"
+        }
+
+    ];
+
+    items.forEach(item => {
+
+        if(item.count <= 0)
+            return;
+
+        const card =
+        document.createElement("button");
+
+        card.className =
+        "upgrade-card";
+
+        card.addEventListener("click", e => {
+            e.preventDefault();
+            e.stopPropagation();
+            usePotion(item.id);
+        });
+
+        card.innerHTML = `
+
+            <div class="upgrade-left">
+
+                <span class="sword-icon">
+                    ${item.icon}
+                </span>
+
+                <div class="upgrade-info">
+
+                    <span class="upgrade-title">
+                        ${item.name}
+                        (x${item.count})
+                    </span>
+
+                    <span class="upgrade-sub">
+                        ${item.desc}
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="upgrade-cost">
+                ✨ 사용하기
+            </div>
+
+        `;
+
+        inventoryTab.appendChild(card);
+    });
+}
+
+/* =========================================================
+   사냥 중 포션
+========================================================= */
+
+function usePotion(potionId) {
+
+    if(inventory[potionId] <= 0)
+        return;
+
+    if(potionId === "hpPotion") {
+
+        inventory.hpPotion--;
+
+        const heal =
+        playerMaxHp / 2n;
+
+        playerHp =
+        playerHp + heal > playerMaxHp
+        ? playerMaxHp
+        : playerHp + heal;
+
+        showTextPop(
+            "🧪 체력 50% 회복!"
+        );
+    }
+
+    else if(potionId === "mpPotion") {
+
+        inventory.mpPotion--;
+
+        const heal =
+        playerMaxMp / 2n;
+
+        playerMp =
+        playerMp + heal > playerMaxMp
+        ? playerMaxMp
+        : playerMp + heal;
+
+        showTextPop(
+            "💧 마나 50% 회복!"
+        );
+    }
+
+    else if(potionId === "luckPotion") {
+
+        inventory.luckPotion--;
+
+        if(Math.random() < .05 && !isDragon && !isBoss && !isMosquito) {
+
+            spawnDragon();
+
+            showTextPop("🐉 전설의 용이 등장했습니다!"
+            );
+
+        } else {
+
+            showTextPop(
+                "🍀 아무 일도 일어나지 않았습니다."
+            );
+        }
+    }
+
+    updateUI();
+
+    if(inventoryTab.classList.contains("active"))
+        renderInventory();
+}
+
+/* =========================================================
+   집 아이템 창
+========================================================= */
+
+function openHomeShop() {
+    if(gameMode !== "home") return;
+    homeInventoryOverlay.classList.remove("active");
+    gameContainer.classList.add("shop-open");
+    switchTab((currentTab === "inventory" || currentTab === "skills") ? "weapon" : currentTab);
+    updateUI();
+}
+
+function closeHomeShop() {
+    gameContainer.classList.remove("shop-open");
+}
+
+function openHomeInventory() {
+    closeHomeShop();
+
+    /*
+       집 상태 유지
+       몬스터 공격도 계속 중지된 상태
+    */
+
+    gameMode = "home";
+
+    renderHomeInventory();
+
+    homeInventoryOverlay.classList.add(
+        "active"
+    );
+}
+
+function closeHomeInventory() {
+
+    homeInventoryOverlay.classList.remove(
+        "active"
+    );
+
+    gameMode = "home";
+}
+
+function renderHomeInventory() {
+
+    homeInventoryContent.innerHTML = "";
+
+    const total =
+    inventory.hpPotion +
+    inventory.mpPotion +
+    inventory.luckPotion;
+
+    if(total === 0) {
+
+        homeInventoryContent.innerHTML =
+        `<div class="empty-inv-msg">
+            인벤토리가 비어있습니다.
+        </div>`;
+
+        return;
+    }
+
+    const items = [
+
+        {
+            id:"hpPotion",
+            name:"체력 회복 포션",
+            icon:"🧪",
+            count:inventory.hpPotion,
+            desc:"전체 체력의 50% 회복"
+        },
+
+        {
+            id:"mpPotion",
+            name:"마나 포션",
+            icon:"💧",
+            count:inventory.mpPotion,
+            desc:"전체 마나의 50% 회복"
+        },
+
+        {
+            id:"luckPotion",
+            name:"행운 포션",
+            icon:"🍀",
+            count:inventory.luckPotion,
+            desc:"0.5% 확률로 용 소환"
+        }
+
+    ];
+
+    items.forEach(item => {
+
+        if(item.count <= 0)
+            return;
+
+        const card =
+        document.createElement("button");
+
+        card.className =
+        "upgrade-card";
+
+        card.addEventListener("click", e => {
+            e.preventDefault();
+            e.stopPropagation();
+            useHomePotion(item.id);
+        });
+
+        card.innerHTML = `
+
+            <div class="upgrade-left">
+
+                <span class="sword-icon">
+                    ${item.icon}
+                </span>
+
+                <div class="upgrade-info">
+
+                    <span class="upgrade-title">
+                        ${item.name}
+                        (x${item.count})
+                    </span>
+
+                    <span class="upgrade-sub">
+                        ${item.desc}
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="upgrade-cost">
+                ✨ 사용
+            </div>
+
+        `;
+
+        homeInventoryContent.appendChild(card);
+    });
+}
+
+
+/* =========================================================
+   집에서 포션 사용
+========================================================= */
+
+function useHomePotion(potionId) {
+
+    if(inventory[potionId] <= 0)
+        return;
+
+    if(potionId === "hpPotion") {
+
+        inventory.hpPotion--;
+
+        const heal =
+        playerMaxHp / 2n;
+
+        playerHp =
+        playerHp + heal > playerMaxHp
+        ? playerMaxHp
+        : playerHp + heal;
+
+    }
+
+    else if(potionId === "mpPotion") {
+
+        inventory.mpPotion--;
+
+        const heal =
+        playerMaxMp / 2n;
+
+        playerMp =
+        playerMp + heal > playerMaxMp
+        ? playerMaxMp
+        : playerMp + heal;
+
+    }
+
+    else if(potionId === "luckPotion") {
+
+        inventory.luckPotion--;
+
+        if(Math.random() < .05 && !isDragon && !isBoss && !isMosquito) {
+
+            spawnDragon();
+
+            showTextPop("🐉 전설의 용이 등장했습니다!"
+            );
+
+        } else {
+
+            showTextPop(
+                "🍀 아무 일도 일어나지 않았습니다."
+            );
+        }
+    }
+
+    updateUI();
+
+    /*
+       아이템 창을 닫지 않고
+       수량만 바로 갱신
+    */
+
+    renderHomeInventory();
+    saveGameState();
+}
+
+/* =========================================================
+   스탯 구매
+========================================================= */
+
+function buyStatUpgrade(key) {
+
+    const stat =
+    statUpgrades[key];
+
+    const cost =
+    stat.baseCost *
+    (stat.costMult ** stat.level);
+
+    if(
+        gold >= cost &&
+        stat.level < stat.maxLevel
+    ) {
+
+        gold -= cost;
+
+        stat.level++;
+
+        if(key === "maxHp") {
+
+            playerMaxHp =
+            basePlayerMaxHp +
+            stat.level * 50n;
+
+            playerHp += 50n;
+
+            if(playerHp > playerMaxHp)
+                playerHp = playerMaxHp;
+        }
+
+        updateUI();
+        saveGameState();
+    }
+}
+
+/* =========================================================
+   UI
+========================================================= */
+
+function updateUI() {
+
+    playerMaxHp =
+    basePlayerMaxHp +
+    statUpgrades.maxHp.level * 50n;
+
+    let dmgRed =
+    currentArmorIdx >= 0
+    ? armors[currentArmorIdx].dmgRedPct
+    : 0n;
+
+    if(selectedJob === "tanker")
+        dmgRed += 15n;
+
+    const hpPercent =
+    Number(
+        playerHp * 100n /
+        playerMaxHp
+    );
+
+    playerHpFill.style.width =
+    Math.max(0,hpPercent) + "%";
+
+    playerHpText.innerText =
+    `${formatNum(playerHp)} / ${formatNum(playerMaxHp)}`;
+
+    const mpPercent =
+    Number(
+        playerMp * 100n /
+        playerMaxMp
+    );
+
+    playerMpFill.style.width =
+    Math.max(0,mpPercent) + "%";
+
+    playerMpText.innerText =
+    `${formatNum(playerMp)} / ${formatNum(playerMaxMp)}`;
+
+    monsterAtkText.innerText =
+    `🛡️ 체력 (${monsterAttackInterval / 1000}초마다 피격)`;
+
+    defStatText.innerText =
+    `피해 감소: ${dmgRed}%`;
+
+    const monsterPercent =
+    monsterMaxHp > 0n
+    ? Number(
+        monsterHp * 100n /
+        monsterMaxHp
+      )
+    : 0;
+
+    monsterHpFill.style.width =
+    Math.max(0,monsterPercent) + "%";
+
+    monsterHpText.innerText =
+    `${formatNum(monsterHp)} / ${formatNum(monsterMaxHp)}`;
+
+    /* 집 진행 상황 */
+    if(homeJobText) {
+        homeJobText.innerText = playerJobText.innerText || "-";
+        homeLevelText.innerText = `LV.${playerLevel}`;
+        homeStageText.innerText = formatNum(BigInt(stage));
+        homeKillsText.innerText = `${formatNum(BigInt(kills))}마리`;
+        homeGoldText.innerText = formatNum(gold);
+        const homeAtk = selectedJob && weapons.length ? getSkillBaseAttack() : 0n;
+        homeAtkText.innerText = formatNum(homeAtk);
+        homeDefText.innerText = `${dmgRed}%`;
+        homeMonsterHpText.innerText = `${formatNum(monsterHp)} / ${formatNum(monsterMaxHp)}`;
+        homeHpText.innerText = `${formatNum(playerHp)} / ${formatNum(playerMaxHp)}`;
+        homeMpText.innerText = `${formatNum(playerMp)} / ${formatNum(playerMaxMp)}`;
+        homeHpFill.style.width = `${Math.max(0, hpPercent)}%`;
+        homeMpFill.style.width = `${Math.max(0, mpPercent)}%`;
+        const homeMonsterPercent = monsterMaxHp > 0n ? Number(monsterHp * 100n / monsterMaxHp) : 0;
+        homeMonsterHpFill.style.width = `${Math.max(0, homeMonsterPercent)}%`;
+    }
+
+    /* 현재 열려 있는 탭만 다시 그립니다.
+       모든 탭을 매번 다시 그리면 iOS에서 스크롤 위치가 초기화됩니다. */
+    const activeContent = document.querySelector(".tab-content.active");
+    if(activeContent === weaponTab) renderWeaponList();
+    else if(activeContent === armorTab) renderArmorShop();
+    else if(activeContent === statUpgradeTab) renderStatUpgradeShop();
+    else if(activeContent === inventoryTab) renderInventory();
+    else if(activeContent === skillsTab) renderSkills();
+
+    document.body.classList.remove("mosquito-theme");
+    gameContainer.classList.remove("mosquito-theme");
+
+    if(isBoss) {
+
+        stageText.innerText =
+        `STAGE ${stage} - 🧌 보스 몬스터 등장!`;
+
+        document.body.classList.add("boss-theme");
+        gameContainer.classList.add("boss-theme");
+
+        document.body.classList.remove("dragon-theme");
+        gameContainer.classList.remove("dragon-theme");
+    }
+
+    else if(isMosquito) {
+
+        stageText.innerText =
+        `STAGE ${stage} - 🦟 모기 등장! 한 대 맞으면 죽는다!`;
+
+        document.body.classList.add("mosquito-theme");
+        gameContainer.classList.add("mosquito-theme");
+
+        document.body.classList.remove("boss-theme", "dragon-theme");
+        gameContainer.classList.remove("boss-theme", "dragon-theme");
+    }
+
+    else if(isDragon) {
+
+        stageText.innerText =
+        `STAGE ${stage} - 🔥 전설의 용 등장!`;
+
+        document.body.classList.add("dragon-theme");
+        gameContainer.classList.add("dragon-theme");
+
+        document.body.classList.remove("boss-theme");
+        gameContainer.classList.remove("boss-theme");
+    }
+
+    else {
+
+        stageText.innerText =
+        `STAGE ${stage} - 괴물 등장`;
+
+        document.body.classList.remove("dragon-theme");
+        gameContainer.classList.remove("dragon-theme");
+
+        document.body.classList.remove("boss-theme");
+        gameContainer.classList.remove("boss-theme");
+    }
+
+    killCount.innerText =
+    kills;
+
+    goldText.innerText =
+    formatNum(gold);
+
+    playerNameText.innerHTML =
+    `${nickname} <span>LV:${playerLevel}</span>`;
+
+}
+
+/* =========================================================
+   공격
+========================================================= */
+
+function attackMonster(e) {
+
+    if(
+        gameMode !== "hunting" ||
+        !selectedJob ||
+        playerHp <= 0n ||
+        monsterHp <= 0n
+    )
+        return;
+
+    let atk =
+    getWeaponAtk(
+        weapons[currentWeaponIdx]
+    );
+
+    if(selectedJob === "warrior")
+        atk =
+        atk * 120n / 100n;
+
+    let critChance =
+    Number(
+        statUpgrades.critChance.level
+    );
+
+    if(selectedJob === "mage")
+        critChance += 10;
+
+    if(selectedJob === "archer")
+        critChance += 5;
+
+    let crit = false;
+
+    if(Math.random() * 100 < critChance) {
+
+        atk *= 2n;
+
+        crit = true;
+    }
+
+    archerShownHalf = false;
+    if((selectedJob === "archer" && archerWeakAttackCount > 0) ||
+       (selectedJob === "warrior" && warriorWeakAttackCount > 0))
+        atk = archerHalf(atk);
+    if(isMosquito) { atk = monsterHp; archerShownHalf = false; }
+
+    monsterHp -= atk;
+
+    monster.classList.remove("hit");
+
+    void monster.offsetWidth;
+
+    monster.classList.add("hit");
+
+    showDamagePop(e, archerShownHalf ? 0.5 : atk, crit);
+
+    if(monsterHp <= 0n) {
+
+        monsterHp = 0n;
+
+        setTimeout(
+            nextStage,
+            100
+        );
+    }
+
+    updateUI();
+    saveGameState();
+}
+
+/* =========================================================
+   몬스터 공격
+========================================================= */
+
+function monsterAttack() {
+
+    if(
+        gameMode !== "hunting" ||
+        !selectedJob ||
+        playerHp <= 0n
+    )
+        return;
+
+    if(isDragon)
+        return;
+
+    let rawDamage =
+    BigInt(stage);
+
+    let dmgRed =
+    currentArmorIdx >= 0
+    ? armors[currentArmorIdx].dmgRedPct
+    : 0n;
+
+    if(selectedJob === "tanker")
+        dmgRed += 15n;
+
+    let damage =
+    rawDamage *
+    (100n - dmgRed) /
+    100n;
+
+    /* 모기는 방어구/탱커 피해 감소 무시 */
+    if(isMosquito) damage = rawDamage;
+
+    if(damage < 1n)
+        damage = 1n;
+
+    playerHp -= damage;
+
+    gameContainer.classList.remove(
+        "player-hit"
+    );
+
+    void gameContainer.offsetWidth;
+
+    gameContainer.classList.add(
+        "player-hit"
+    );
+
+    if(playerHp <= 0n) {
+
+        playerHp = 0n;
+
+        handleDeath();
+    }
+
+    updateUI();
+}
+
+function startMonsterAttackLoop() {
+
+    if(monsterAttackTimer)
+        clearInterval(monsterAttackTimer);
+
+    monsterAttackTimer =
+    setInterval(
+        monsterAttack,
+        monsterAttackInterval
+    );
+}
+
+function stopMonsterAttackLoop() {
+
+    if(monsterAttackTimer) {
+
+        clearInterval(
+            monsterAttackTimer
+        );
+
+        monsterAttackTimer = null;
+    }
+}
+
+/* =========================================================
+   사망
+========================================================= */
+
+function handleDeath() {
+
+    stopMonsterAttackLoop();
+    gold = gold / 2n;
+
+    deathOverlay.classList.add(
+        "active"
+    );
+    saveGameState(true);
+}
+
+function respawnPlayer() {
+
+    playerHp =
+    playerMaxHp;
+
+    deathOverlay.classList.remove(
+        "active"
+    );
+
+    gameMode = "hunting";
+
+    startMonsterAttackLoop();
+
+    updateUI();
+    saveGameState();
+}
+
+/* =========================================================
+   데미지 팝업
+========================================================= */
+
+function showDamagePop(
+    e,
+    value,
+    crit = false
+) {
+
+    const pop =
+    document.createElement("div");
+
+    pop.className =
+    `damage-pop ${crit ? "crit" : ""}`;
+
+    pop.innerText =
+    `${crit ? "💥 " : ""}-${formatNum(value)}`;
+
+    const rect =
+    monsterArea.getBoundingClientRect();
+
+    let x =
+    e && e.clientX
+    ? e.clientX - rect.left
+    : rect.width / 2;
+
+    let y =
+    e && e.clientY
+    ? e.clientY - rect.top
+    : rect.height / 2;
+
+    pop.style.left =
+    `${x - 10}px`;
+
+    pop.style.top =
+    `${y - 15}px`;
+
+    monsterArea.appendChild(pop);
+
+    setTimeout(
+        () => pop.remove(),
+        500
+    );
+}
+
+function showTextPop(text) {
+
+    const pop = document.createElement("div");
+    pop.className = "damage-pop drop-msg center-msg";
+    pop.innerText = text;
+
+    /* 여러 문구가 동시에 뜨면 아래로 쌓음 */
+    const stacked = gameContainer.querySelectorAll(".center-msg").length;
+    pop.style.top = `calc(50% - 20px + ${stacked * 30}px)`;
+
+    gameContainer.appendChild(pop);
+
+    setTimeout(() => pop.remove(), 2000);
+}
+
+/* =========================================================
+   용
+========================================================= */
+
+function spawnMosquito() {
+    if(isDragon || isBoss || isMosquito) return;
+    isMosquito = true;
+    mosquitoNormalMaxHp = monsterMaxHp;
+    mosquitoPrevHp = playerHp;
+    monster.innerText = "🦟";
+    monsterMaxHp = 1n;
+    monsterHp = 1n;
+    playerHp = 1n;
+    showTextPop("🦟 모기 출현! 한 대만 맞아도 죽는다!!");
+    showTextPop("💔 체력이 1이 되었다...");
+    updateUI();
+    saveGameState();
+}
+
+function spawnDragon() {
+    if(isDragon || isBoss || isMosquito) return;
+
+    isDragon = true;
+    isBoss = false;
+
+    monster.innerText =
+    "🐉";
+
+    monsterMaxHp =
+    monsterMaxHp * 10n;
+
+    monsterHp =
+    monsterMaxHp;
+
+    updateUI();
+    saveGameState();
+}
+
+/* =========================================================
+   다음 스테이지
+========================================================= */
+
+function nextStage() {
+
+    const killedBoss =
+    isBoss;
+
+    const killedDragon =
+    isDragon;
+
+    const killedMosquito = isMosquito;
+    if(killedMosquito) {
+        monsterMaxHp = mosquitoNormalMaxHp;
+        showTextPop("🦟 모기 처치! 하지만 체력은 그대로다...");
+    }
+
+    kills++;
+
+    if(warriorWeakAttackCount > 0) warriorWeakAttackCount--;
+    if(archerWeakAttackCount > 0) archerWeakAttackCount--;
+
+    /* 골드 */
+
+    let baseReward =
+    (monsterMaxHp * 10n) / 100n;
+
+    if(baseReward < 1n)
+        baseReward = 1n;
+
+    let bonusGoldPct =
+    statUpgrades.goldBonus.level * 10n;
+
+    if(selectedJob === "archer")
+        bonusGoldPct += 10n;
+
+    baseReward =
+    baseReward *
+    (100n + bonusGoldPct) /
+    100n;
+
+    if(killedDragon)
+        gold += baseReward * 10n;
+
+    else if(killedBoss)
+        gold += baseReward * 2n;
+
+    else
+        gold += baseReward;
+
+    /* 레벨 */
+
+    if(killedBoss || killedDragon) {
+
+        playerLevel++;
+        basePlayerMaxHp += 10n;
+
+        showTextPop(
+            `🎉 레벨 업! LV:${playerLevel}`
+        );
+    }
+
+    /* 보스 보상 */
+
+    if(killedBoss) {
+
+        inventory.mpPotion++;
+
+        showTextPop(
+            "🧌 보스 처치! 💧 마나 포션 +1"
+        );
+    }
+
+    /* 일반 드롭 */
+
+    let dropChance =
+    0.10 +
+    Number(statUpgrades.luck.level) *
+    0.01;
+
+    if(Math.random() < dropChance) {
+
+        const rand =
+        Math.random();
+
+        if(rand < .333) {
+
+            inventory.hpPotion++;
+
+            showTextPop(
+                "🎁 체력 회복 포션 획득!"
+            );
+
+        }
+
+        else if(rand < .666) {
+
+            inventory.mpPotion++;
+
+            showTextPop(
+                "🎁 마나 포션 획득!"
+            );
+
+        }
+
+        else {
+
+            inventory.luckPotion++;
+
+            showTextPop(
+                "🎁 행운 포션 획득!"
+            );
+        }
+    }
+
+    stage++;
+
+    let nextNormalHp;
+
+    if(killedDragon || killedBoss) {
+
+        let normalBaseHp =
+        killedDragon
+        ? monsterMaxHp / 10n
+        : monsterMaxHp / 2n;
+
+        nextNormalHp =
+        normalBaseHp * 112n / 100n;
+
+    } else {
+
+        nextNormalHp =
+        monsterMaxHp * 112n / 100n;
+    }
+
+    monsterMaxHp =
+    nextNormalHp;
+
+    isDragon = false;
+    isBoss = false;
+    isMosquito = false;
+
+    if(kills % 100 === 99) {
+
+        isBoss = true;
+
+        monster.innerText =
+        "🧌";
+
+        monsterMaxHp =
+        monsterMaxHp * 2n;
+
+        monsterHp =
+        monsterMaxHp;
+    }
+
+    else if(Math.random() < .005) {
+
+        spawnDragon();
+
+    }
+
+    else if(Math.random() < .005) {
+
+        spawnMosquito();
+
+    }
+
+    else {
+
+        if(monsterQueue.length === 0)
+            shuffleMonsters();
+
+        monster.innerText =
+        monsterQueue.shift();
+
+        monsterHp =
+        monsterMaxHp;
+    }
+
+    updateUI();
+    saveGameState();
+}
+
+/* =========================================================
+   무기 구매
+========================================================= */
+
+function buyWeapon(targetIdx) {
+
+    const w = weapons[targetIdx];
+    if(!w) return;
+
+    if(kills < w.reqKills) {
+        showTextPop("🔒 처치 수가 부족합니다!");
+        return;
+    }
+
+    if(gold < w.cost) {
+        showTextPop("💰 골드가 부족합니다!");
+        return;
+    }
+
+    {
+        gold -= w.cost;
+
+        currentWeaponIdx =
+        targetIdx;
+
+        if(currentWeaponIdx >= 4) {
+
+            if(monsterAttackInterval !== 3000) {
+
+                monsterAttackInterval =
+                3000;
+
+                startMonsterAttackLoop();
+
+                showTextPop(
+                    "⚠️ 몬스터 공격 속도 증가! (3초)"
+                );
+            }
+        }
+
+        updateUI();
+        saveGameState();
+    }
+}
+
+/* =========================================================
+   방어구 구매
+========================================================= */
+
+function buyArmor(targetIdx) {
+
+    const a = armors[targetIdx];
+    if(!a) return;
+
+    if(targetIdx !== currentArmorIdx + 1) return;
+
+    if(gold < a.cost) {
+        showTextPop("💰 골드가 부족합니다!");
+        return;
+    }
+
+    {
+        gold -= a.cost;
+
+        currentArmorIdx =
+        targetIdx;
+
+        updateUI();
+        saveGameState();
+    }
+}
+
+/* =========================================================
+   집 시스템
+========================================================= */
+
+function goHome() {
+
+    if(
+        !selectedJob ||
+        gameMode !== "hunting"
+    )
+        return;
+
+    gameMode = "home";
+    closeHomeShop();
+
+    /*
+       사냥 완전 중지
+    */
+
+    stopMonsterAttackLoop();
+
+    /*
+       혹시 열려 있던 아이템 창 초기화
+    */
+
+    homeInventoryOverlay.classList.remove(
+        "active"
+    );
+
+    homeScreen.classList.add(
+        "active"
+    );
+    gameContainer.classList.add("home-mode");
+
+    homeBtn.style.display =
+    "none";
+
+    updateUI();
+    saveGameState(true);
+}
+
+function returnToHunt() {
+
+    /*
+       아이템 창이 열려 있다면 닫기
+    */
+
+    homeInventoryOverlay.classList.remove(
+        "active"
+    );
+
+    gameMode = "hunting";
+    closeHomeShop();
+
+    homeScreen.classList.remove(
+        "active"
+    );
+    gameContainer.classList.remove("home-mode");
+
+    homeBtn.style.display =
+    "block";
+
+    startMonsterAttackLoop();
+
+    updateUI();
+    saveGameState();
+}
+
+/* =========================================================
+   이벤트
+========================================================= */
+
+let lastTouchAt = 0;
+monsterArea.addEventListener("mousedown", e => {
+    if(Date.now() - lastTouchAt < 500) return;
+    attackMonster(e);
+});
+
+monsterArea.addEventListener(
+    "touchstart",
+    e => {
+        e.preventDefault();
+        lastTouchAt = Date.now();
+        attackMonster(
+            e.touches[0]
+        );
+
+    },
+    {
+        passive:false
+    }
+);
+
+/* =========================================================
+   시작
+========================================================= */
+
+/* 탭 스크롤 위치 기억 */
+const tabMapForScroll = {
+    weapon: weaponTab,
+    armor: armorTab,
+    statUpgrade: statUpgradeTab,
+    inventory: inventoryTab,
+    skills: skillsTab
+};
+Object.entries(tabMapForScroll).forEach(([key, tab]) => {
+    if (!tab) return;
+    tab.addEventListener("scroll", () => {
+        tabScrollPositions[key] = tab.scrollTop;
+        saveGameState();
+    }, {passive:true});
+});
+
+window.addEventListener("pagehide", () => saveGameState(true));
+window.addEventListener("beforeunload", () => saveGameState(true));
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") saveGameState(true);
+});
+
+/* =========================================================
+   시작
+========================================================= */
+setInterval(() => {
+    if(gameMode !== "hunting" || !selectedJob || playerHp <= 0n || playerMp >= playerMaxMp) return;
+    let r = playerMaxMp / 50n; if(r < 1n) r = 1n;
+    playerMp += r; if(playerMp > playerMaxMp) playerMp = playerMaxMp;
+    updateUI();
+}, 1000);
+
+/* true: 열 때마다 항상 처음부터 시작 / false: 저장된 진행도 이어하기 */
+const START_FRESH = true;
+if (START_FRESH) { try { localStorage.removeItem(SAVE_KEY); } catch(e) {} }
+
+const restored = loadGameState();
+if (!restored) {
+    shuffleMonsters();
+    monster.innerText = monsterQueue.shift();
+    updateUI();
+    switchTab("weapon", false);
+}
+
+
+</script>
+
+</body>
+</html>
