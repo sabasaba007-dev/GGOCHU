@@ -4125,7 +4125,7 @@ setInterval(() => {
 }, 1000);
 
 /* true: 열 때마다 항상 처음부터 시작 / false: 저장된 진행도 이어하기 */
-const START_FRESH = true;
+const START_FRESH = false;
 if (START_FRESH) { try { localStorage.removeItem(SAVE_KEY); } catch(e) {} }
 
 const restored = loadGameState();
